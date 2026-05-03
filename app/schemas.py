@@ -1,4 +1,4 @@
-."""Pydantic response schemas for the scraping API."""
+"""Pydantic response schemas for the scraping API."""
 
 from __future__ import annotations
 
