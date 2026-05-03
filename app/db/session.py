@@ -6,8 +6,18 @@ from sqlalchemy.orm import declarative_base
 from ..config import settings
 
 # Async engine using asyncpg driver
+# Adjust DATABASE_URL for asyncpg driver.
+# Railway (and many providers) supply a URL starting with "postgres://".
+# SQLAlchemy with asyncpg expects "postgresql+asyncpg://".
+# We replace either prefix accordingly.
+raw_url = settings.database_url
+if raw_url.startswith('postgres://'):
+    async_url = raw_url.replace('postgres://', 'postgresql+asyncpg://', 1)
+else:
+    async_url = raw_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
+
 engine: AsyncEngine = create_async_engine(
-    settings.database_url.replace('postgresql://', 'postgresql+asyncpg://'),
+    async_url,
     echo=False,
     future=True,
 )

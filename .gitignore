@@ -1,2 +1,21 @@
-.claude/settings.local.json
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+env/
+
+# Environment secrets
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Claude local settings
 .claude/settings.local.json
