@@ -17,16 +17,6 @@ app.include_router(scrape_router)
 app.include_router(debug_router)
 
 
-@app.on_event("startup")
-async def startup():
-    """Create database tables if they don't exist (for PostgreSQL on Railway)."""
-    async with engine.begin() as conn:
-        def create_tables(sync_conn):
-            Base.metadata.create_all(sync_conn)
-        await conn.run_sync(create_tables)
-    print("Database tables ensured.")
-
-
 # Simple health check – Railway will call this endpoint to verify the service is up.
 @app.get("/healthz")
 async def healthz():
