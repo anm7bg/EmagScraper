@@ -1,0 +1,72 @@
+{
+  "links": [
+    {
+      "href": "https://www.emag.bg/nike-obuvki-s-velkro-i-otvori/fd/5756984/cvjat-c5401,svetlo-oranzhevo-alenocherven-v1007456853/",
+      "text": "",
+      "class": "mb-2 js-product-url card-v2-thumb card-v2-thumb-overlay"
+    },
+    {
+      "href": "https://www.emag.bg/nike-obuvki-s-velkro-i-otvori/fd/5756984/cvjat-c5401,svetlo-oranzhevo-alenocherven-v1007456853/",
+      "text": "Nike - Обувки с велкро и отвори, Светло оранжево/А",
+      "class": "card-alt no-decoration js-product-url"
+    }
+  ],
+  "imgs": [
+    {
+      "src": "https://s13emagst.akamaized.net/products/88716/88715704/images/res_10621c1c3cf8a3ff5ffc6723a60e2518.jpg?width=720&height=720&hash=776A03319520BED2322968540341A89D",
+      "class": "w-100",
+      "alt": "Nike, Обувки с велкро и отвори, Светло оранжево/Аленочервен"
+    },
+    {
+      "src": "https://s13emagst.akamaized.net/layout/ro/static-upload/user-wallet-info-budget.png",
+      "class": "",
+      "alt": ""
+    }
+  ],
+  "prices": [
+    {
+      "text": "от 36,68 €",
+      "class": "product-new-price"
+    },
+    {
+      "text": "/71,74 лв.",
+      "class": "product-new-price"
+    },
+    {
+      "text": "/",
+      "class": "text-neutral fw-bold mx-1 lh-1 product-price-separator"
+    }
+  ],
+  "allClasses": [
+    "card-v2 has-characteristics",
+    "card-v2-wrapper js-section-wrapper",
+    "card-v2-badges",
+    "card-v2-badge badge-genius ",
+    "em em-genius-text",
+    "card-v2-toolbox",
+    "add-to-favorites btn add-to-favorites-family",
+    "d-flex align-items-center justify-content-center",
+    "icon-svg icon-add-to-favorites",
+    "",
+    "card-compare-btn hidden-xs gtm_kz1kte2",
+    "card-v2-info",
+    "mb-2 js-product-url card-v2-thumb card-v2-thumb-overlay",
+    "img-component position-relative card-v2-thumb-inner",
+    "w-100",
+    "card-v2-badge-cmp-holder d-flex align-items-start flex-column",
+    "js-vcr-card-badge-placeholder vcr-card-badge-placeholder visible",
+    "js-vcr-badge-placeholder",
+    "px-2",
+    "card-alt no-decoration js-product-url",
+    "card-v2-title card-v2-fashion-title card-v2-title-wrapper",
+    "title-dash",
+    "characteristics mb-1",
+    "filter-color filter-color-12",
+    "filter-color filter-color-5",
+    "filter-color filter-color-7",
+    "filter-color filter-color-2",
+    "my-wallet-badge fs-12 fw-semibold text-truncate",
+    "card-v2-content",
+    "card-v2-pricing bg-light bg-opacity-90 text-neutral-darkest"
+  ]
+}

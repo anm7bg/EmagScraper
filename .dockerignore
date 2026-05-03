@@ -1,0 +1,57 @@
+# Version control
+.git
+.gitignore
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Test files and caches
+tests/
+.pytest_cache
+.coverage
+htmlcov/
+
+# Database files (use PostgreSQL on Railway)
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Claude Code directory (local only)
+.claude/
+
+# Development scripts (not needed in production)
+inspect_*.py
+check_*.py
+get_*.py
+scripts/
+
+# Environment files (use Railway env vars)
+.env
+.env.*
+
+# Any other temp files
+*.bak
+*.tmp
+*~
