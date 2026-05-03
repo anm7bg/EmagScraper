@@ -39,11 +39,15 @@ async def run_migrations_online() -> None:
     # Override sqlalchemy.url from environment variable
     db_url = os.environ.get("DATABASE_URL")
     if db_url:
-        # Convert postgres:// to postgresql+asyncpg://
-        if db_url.startswith("postgres://"):
-            db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
-        elif "postgresql://" in db_url and "+asyncpg" not in db_url:
-            db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        # Fallback to SQLite if DATABASE_URL points to localhost (common in containers without DB)
+        if 'localhost' in db_url or '127.0.0.1' in db_url or '::1' in db_url:
+            db_url = 'sqlite:///./emag_scraper.db'
+        else:
+            # Convert postgres:// to postgresql+asyncpg://
+            if db_url.startswith("postgres://"):
+                db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif "postgresql://" in db_url and "+asyncpg" not in db_url:
+                db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
         config.set_main_option("sqlalchemy.url", db_url)
 
     connectable = async_engine_from_config(

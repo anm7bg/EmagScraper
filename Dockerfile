@@ -47,4 +47,4 @@ RUN playwright install chromium
 EXPOSE 8000
 
 # Run the FastAPI application
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["sh", "-c", "if echo \"$DATABASE_URL\" | grep -qE 'localhost|127\\.0\\.0\\.1|::1'; then echo 'Skipping migrations (local DB)'; else alembic upgrade head; fi && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

@@ -10,8 +10,17 @@ from ..config import settings
 # Railway (and many providers) supply a URL starting with "postgres://".
 # SQLAlchemy with asyncpg expects "postgresql+asyncpg://".
 # We replace either prefix accordingly.
+# Determine final async URL, falling back to SQLite if DATABASE_URL points to a local Postgres that may be unavailable
 raw_url = settings.database_url
-if raw_url.startswith('postgres://'):
+if raw_url.startswith('postgres://') or raw_url.startswith('postgresql://'):
+    # Check for localhost addresses which often indicate a missing external DB in container
+    if 'localhost' in raw_url or '127.0.0.1' in raw_url or '::1' in raw_url:
+        # Use SQLite fallback for local development / missing DB
+        raw_url = 'sqlite+aiosqlite:///./emag_scraper.db'
+
+if raw_url.startswith('sqlite'):
+    async_url = raw_url
+elif raw_url.startswith('postgres://'):
     async_url = raw_url.replace('postgres://', 'postgresql+asyncpg://', 1)
 else:
     async_url = raw_url.replace('postgresql://', 'postgresql+asyncpg://', 1)
