@@ -3,15 +3,16 @@
 from fastapi import APIRouter
 from playwright.async_api import async_playwright
 from app.config import settings
+from app.scraper.emag import EMAG_DOMAINS
 
 router = APIRouter(prefix="/debug", tags=["debug"])
 
 # Selectors used in our scraper (from emag.py)
 SELECTORS = [
-    ".card-item",                     # Primary product card container
-    ".product-new-price",            # Price element
-    ".product-title",                # Title element (snapshot)
-    "a.product-title",               # Title link selector (snapshot live)
+    ".card-item",                     # Primary product card container (still valid)
+    ".product-new-price",            # Price element (primary)
+    "h2",                            # Title element (current selector)
+    "a[href]",          # Title link selector (generic)
 ]
 
 DEFAULT_TEST_URL = "https://www.emag.bg/search/nike/"
