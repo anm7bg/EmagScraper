@@ -14,6 +14,13 @@ app = FastAPI(
     description="FastAPI service that scrapes product data from Emag using Playwright.",
 )
 
+@app.on_event("startup")
+async def startup():
+    from app.db.session import engine, Base
+    if engine.dialect.name == "sqlite":
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
 app.include_router(scrape_router)
 app.include_router(debug_router)
 
