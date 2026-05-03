@@ -6,6 +6,7 @@ from app.routers.debug import router as debug_router
 from app.config import settings
 from app.scraper.emag import scrape_emag
 from app.db.session import AsyncSessionLocal, engine, Base
+from sqlalchemy import text
 
 app = FastAPI(
     title="Emag Scraper API",
@@ -29,7 +30,7 @@ async def healthz():
     try:
         # Perform a minimal DB query to ensure the connection works.
         async with AsyncSessionLocal() as session:
-            await session.execute("SELECT 1")
+            await session.execute(text("SELECT 1"))
         return {"status": "ok"}
     except Exception as e:
         return {"status": "error", "reason": str(e)}

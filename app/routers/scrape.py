@@ -10,7 +10,7 @@ from ..schemas import ScrapeResponse
 from datetime import datetime
 from ..scraper.emag import scrape_emag
 
-router = APIRouter(prefix="/scrape", tags=["scrape"])
+router = APIRouter(prefix="/api/scrape", tags=["scrape"])
 
 async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1):
     """Background task that runs the scraper for N pages and updates the job."""
@@ -35,7 +35,7 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
             await db.commit()
 
 
-@router.post("/scrape", response_model=ScrapeJobRead, status_code=202)
+@router.post("/", response_model=ScrapeJobRead, status_code=202)
 async def start_scrape(
     request: ScrapeRequest,
     background_tasks: BackgroundTasks,
@@ -64,7 +64,7 @@ async def start_scrape(
     return job
 
 
-@router.get("/scrape/{job_id}", response_model=ScrapeJobRead)
+@router.get("/{job_id}", response_model=ScrapeJobRead)
 async def get_scrape_status(job_id: int, db: AsyncSession = Depends(get_db)):
     job = await db.get(ScrapeJob, job_id)
     if not job:
@@ -72,7 +72,7 @@ async def get_scrape_status(job_id: int, db: AsyncSession = Depends(get_db)):
     return job
 
 
-@router.get("/scrape", response_model=ScrapeResponse)
+@router.get("/", response_model=ScrapeResponse)
 async def scrape_products(keyword: str, page: int = 1):
     """Scrape products for a keyword and return a list of product data.
     Example: GET /scrape?keyword=nike&page=1
