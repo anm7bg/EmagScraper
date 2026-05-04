@@ -9,11 +9,14 @@ from ..models.scrape_job import ScrapeJob, JobStatus, ScrapeRequest, ScrapeJobRe
 from ..schemas import ScrapeResponse
 from datetime import datetime
 from ..scraper.emag import scrape_emag
+from sqlalchemy import select
+from ..models.product import Product, PriceHistory
 
 router = APIRouter(prefix="/api/scrape", tags=["scrape"])
 
 async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1):
     """Background task that runs the scraper for N pages and updates the job."""
+    import re
     async with AsyncSessionLocal() as db:
         job = await db.get(ScrapeJob, job_id)
         if not job:
@@ -25,6 +28,47 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
             for p in range(1, pages + 1):
                 products = await scrape_emag(keyword, store=store, page=p)
                 total_products += len(products)
+                for prod in products:
+                    product_url = prod.get("url") or prod.get("product_url")
+                    if not product_url:
+                        continue
+                    # Extract external_id from URL pattern .../pd/EXTERNAL_ID/
+                    match = re.search(r'/pd/([^/?#]+)', product_url)
+                    if not match:
+                        continue
+                    external_id = match.group(1)
+                    # Upsert product
+                    stmt = select(Product).where(Product.external_id == external_id, Product.store == store).limit(1)
+                    result = await db.execute(stmt)
+                    existing = result.scalar_one_or_none()
+                    if existing:
+                        existing.title = prod["title"]
+                        existing.price = prod["price"]
+                        existing.currency = prod.get("currency", "EUR")
+                        existing.image_url = prod.get("img_url") or prod.get("image_url")
+                        existing.product_url = product_url
+                        existing.categories = prod.get("categories", [])
+                        product_obj = existing
+                    else:
+                        product_obj = Product(
+                            external_id=external_id,
+                            store=store,
+                            title=prod["title"],
+                            price=prod["price"],
+                            currency=prod.get("currency", "EUR"),
+                            image_url=prod.get("img_url") or prod.get("image_url"),
+                            product_url=product_url,
+                            categories=prod.get("categories", []),
+                        )
+                        db.add(product_obj)
+                    # Price history
+                    price_hist = PriceHistory(
+                        product=product_obj,
+                        price=prod["price"],
+                        raw_price=prod.get("raw_price", str(prod["price"])),
+                    )
+                    db.add(price_hist)
+                await db.commit()
             job.products_found = total_products
             job.status = JobStatus.SUCCESS
         except Exception as e:
@@ -73,11 +117,51 @@ async def get_scrape_status(job_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/", response_model=ScrapeResponse)
-async def scrape_products(keyword: str, page: int = 1):
+async def scrape_products(keyword: str, page: int = 1, db: AsyncSession = Depends(get_db)):
     """Scrape products for a keyword and return a list of product data.
     Example: GET /scrape?keyword=nike&page=1
     """
+    import re
     products = await scrape_emag(keyword, store="emag.bg", page=page)
+    # Persist products to database
+    for prod in products:
+        product_url = prod.get("url") or prod.get("product_url")
+        if not product_url:
+            continue
+        match = re.search(r'/pd/([^/?#]+)', product_url)
+        if not match:
+            continue
+        external_id = match.group(1)
+        stmt = select(Product).where(Product.external_id == external_id, Product.store == "emag.bg").limit(1)
+        result = await db.execute(stmt)
+        existing = result.scalar_one_or_none()
+        if existing:
+            existing.title = prod["title"]
+            existing.price = prod["price"]
+            existing.currency = prod.get("currency", "EUR")
+            existing.image_url = prod.get("img_url") or prod.get("image_url")
+            existing.product_url = product_url
+            existing.categories = prod.get("categories", [])
+            product_obj = existing
+        else:
+            product_obj = Product(
+                external_id=external_id,
+                store="emag.bg",
+                title=prod["title"],
+                price=prod["price"],
+                currency=prod.get("currency", "EUR"),
+                image_url=prod.get("img_url") or prod.get("image_url"),
+                product_url=product_url,
+                categories=prod.get("categories", []),
+            )
+            db.add(product_obj)
+        price_hist = PriceHistory(
+            product=product_obj,
+            price=prod["price"],
+            raw_price=prod.get("raw_price", str(prod["price"])),
+        )
+        db.add(price_hist)
+    await db.commit()
     return ScrapeResponse(products=products)
 
 
