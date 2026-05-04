@@ -21,7 +21,7 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
         job = await db.get(ScrapeJob, job_id)
         if not job:
             return
-        job.status = JobStatus.RUNNING
+        job.status = JobStatus.running
         await db.commit()
         total_products = 0
         try:
@@ -70,9 +70,9 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
                     db.add(price_hist)
                 await db.commit()
             job.products_found = total_products
-            job.status = JobStatus.SUCCESS
+            job.status = JobStatus.success
         except Exception as e:
-            job.status = JobStatus.FAILED
+            job.status = JobStatus.failed
             job.error = str(e)
         finally:
             job.finished_at = datetime.utcnow()
@@ -91,7 +91,7 @@ async def start_scrape(
         keyword=request.keyword,
         store="emag.bg",
         pages=request.pages,
-        status=JobStatus.PENDING,
+        status=JobStatus.pending,
         created_at=datetime.utcnow(),
         async_mode=request.async_mode,
     )
@@ -178,7 +178,7 @@ async def batch_scrape(
             keyword=keyword,
             store="emag.bg",
             pages=request.pages,
-            status=JobStatus.PENDING,
+            status=JobStatus.pending,
             created_at=datetime.utcnow(),
             async_mode=request.async_mode,
         )

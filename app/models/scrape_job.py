@@ -14,10 +14,14 @@ from pydantic import BaseModel, Field
 # ---------- SQLAlchemy model ----------
 
 class JobStatus(str, PyEnum):
-    PENDING = "pending"
-    RUNNING = "running"
-    SUCCESS = "success"
-    FAILED = "failed"
+    pending = "pending"
+    running = "running"
+    success = "success"
+    failed = "failed"
+
+    @property
+    def db_value(self):
+        return self.value
 
 
 class ScrapeJob(Base):
@@ -26,7 +30,7 @@ class ScrapeJob(Base):
     id = Column(Integer, primary_key=True, index=True)
     keyword = Column(String, nullable=False)
     store = Column(String, nullable=False)  # e.g., "emag.bg"
-    status = Column(Enum(JobStatus), nullable=False, default=JobStatus.PENDING)
+    status = Column(Enum(JobStatus), nullable=False, default=JobStatus.pending)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     finished_at = Column(DateTime, nullable=True)
     error = Column(String, nullable=True)
