@@ -1,5 +1,6 @@
 """Playwright-based scraper for Emag search results using resilient parser."""
 
+import logging
 from typing import List, Dict
 import asyncio
 import random
@@ -14,6 +15,8 @@ from app.scraper.parser import (
     extract_image_url,
     extract_categories,
 )
+
+logger = logging.getLogger(__name__)
 
 EMAG_DOMAINS = {
     "emag.bg": "https://www.emag.bg",
@@ -45,9 +48,9 @@ async def scrape_emag(keyword: str, store: str = "emag.bg", page: int = 1) -> Li
                 page_obj = await context.new_page()
 
                 try:
-                    await page_obj.goto(search_url, wait_until="networkidle", timeout=30000)
+                    await page_obj.goto(search_url, wait_until="load", timeout=60000)
                     # Wait enough time for dynamic content to render
-                    await page_obj.wait_for_timeout(3000)
+                    await page_obj.wait_for_timeout(1500)
 
                     cards = await extract_product_cards(page_obj)
 
@@ -69,7 +72,7 @@ async def scrape_emag(keyword: str, store: str = "emag.bg", page: int = 1) -> Li
                                 "img_url": img_url,
                             })
                         except Exception as e:
-                            print(f"Skipping product due to error: {e}")
+                            logger.exception("Skipping product due to error")
                             continue
                 finally:
                     await browser.close()
@@ -78,6 +81,6 @@ async def scrape_emag(keyword: str, store: str = "emag.bg", page: int = 1) -> Li
         except Exception as e:
             if attempt == 2:
                 raise
-            print(f"Scrape attempt {attempt + 1} failed: {e}, retrying...")
+            logger.error("Scrape attempt %d failed: %s, retrying...", attempt + 1, e, exc_info=True)
 
     return products

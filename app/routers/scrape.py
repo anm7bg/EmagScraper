@@ -1,6 +1,10 @@
 """Router for triggering and monitoring scrape jobs."""
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+import asyncio
+import logging
+from ..config import settings
+logger = logging.getLogger(__name__)
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
@@ -23,21 +27,22 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
             return
         job.status = JobStatus.running
         await db.commit()
+        logger.info(f"Scrape job {job_id} started for keyword '{keyword}' with {pages} page(s)")
         total_products = 0
         try:
             for p in range(1, pages + 1):
+                logger.debug(f"Scraping page {p}/{pages} for job {job_id}")
                 products = await scrape_emag(keyword, store=store, page=p)
                 total_products += len(products)
+                logger.debug(f"Found {len(products)} products on page {p}")
                 for prod in products:
                     product_url = prod.get("url") or prod.get("product_url")
                     if not product_url:
                         continue
-                    # Extract external_id from URL pattern .../pd/EXTERNAL_ID/
                     match = re.search(r'/pd/([^/?#]+)', product_url)
                     if not match:
                         continue
                     external_id = match.group(1)
-                    # Upsert product
                     stmt = select(Product).where(Product.external_id == external_id, Product.store == store).limit(1)
                     result = await db.execute(stmt)
                     existing = result.scalar_one_or_none()
@@ -61,7 +66,6 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
                             categories=prod.get("categories", []),
                         )
                         db.add(product_obj)
-                    # Price history
                     price_hist = PriceHistory(
                         product=product_obj,
                         price=prod["price"],
@@ -69,11 +73,16 @@ async def _run_scrape_job(job_id: int, keyword: str, store: str, pages: int = 1)
                     )
                     db.add(price_hist)
                 await db.commit()
+                # Respect request delay between pages
+                if p < pages:
+                    await asyncio.sleep(settings.request_delay)
             job.products_found = total_products
             job.status = JobStatus.success
+            logger.info(f"Scrape job {job_id} completed successfully, {total_products} products stored")
         except Exception as e:
             job.status = JobStatus.failed
             job.error = str(e)
+            logger.exception(f"Scrape job {job_id} failed: {e}")
         finally:
             job.finished_at = datetime.utcnow()
             await db.commit()

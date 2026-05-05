@@ -29,6 +29,7 @@ engine: AsyncEngine = create_async_engine(
     async_url,
     echo=False,
     future=True,
+    connect_args={"check_same_thread": False} if async_url.startswith('sqlite') else {},
 )
 
 # Session factory
