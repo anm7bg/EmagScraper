@@ -4,7 +4,6 @@ import logging
 from typing import List, Dict
 import asyncio
 import random
-import time
 from playwright.async_api import async_playwright
 from app.config import settings
 from app.scraper.parser import (
@@ -39,7 +38,6 @@ async def scrape_emag(keyword: str, store: str = "emag.bg", page: int = 1) -> Li
     # Retry loop with random delay
     for attempt in range(3):
         try:
-            # Random delay before each attempt
             await asyncio.sleep(random.uniform(1, 3))
 
             async with async_playwright() as p:
@@ -49,7 +47,6 @@ async def scrape_emag(keyword: str, store: str = "emag.bg", page: int = 1) -> Li
 
                 try:
                     await page_obj.goto(search_url, wait_until="load", timeout=60000)
-                    # Wait enough time for dynamic content to render
                     await page_obj.wait_for_timeout(1500)
 
                     cards = await extract_product_cards(page_obj)
@@ -76,7 +73,6 @@ async def scrape_emag(keyword: str, store: str = "emag.bg", page: int = 1) -> Li
                             continue
                 finally:
                     await browser.close()
-            # Success - break out of retry loop
             break
         except Exception as e:
             if attempt == 2:
